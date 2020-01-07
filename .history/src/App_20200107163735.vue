@@ -33,7 +33,7 @@
                  :loading="loading"
                  :disabled="loading"
                  class="text-none dark-button"
-                 @click.native="login">
+                 @click.native="onLoginClicked">
             Login
           </v-btn>
         </v-card-actions>
@@ -56,7 +56,7 @@ export default {
   }),
   methods: {
     login() {
-      api.login(this.user).then((result) => {
+      api.login.then((result) => {
         this.$store.dispatch('saveUser', result);
       });
     },

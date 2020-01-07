@@ -4,7 +4,6 @@ import App from './App.vue';
 import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false
-Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
@@ -16,7 +15,7 @@ const store = new Vuex.Store({
     },
   },
   mutations: {
-    SET_USER(state, data) {
+    SET_USER({ state }, data) {
       state.user = data;
     },
   },

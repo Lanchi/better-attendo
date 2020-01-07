@@ -4,7 +4,6 @@ import App from './App.vue';
 import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false
-Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
@@ -12,18 +11,17 @@ const store = new Vuex.Store({
   },
   actions: {
     saveUser({ commit }, data) {
-      commit('SET_USER', data);
+      commit('SET_USER')
     },
   },
   mutations: {
-    SET_USER(state, data) {
-      state.user = data;
+    SET_USER({ state }, data) {
+
     },
   },
 });
 
 new Vue({
   vuetify,
-  store,
   render: h => h(App)
 }).$mount('#app')

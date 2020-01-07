@@ -56,7 +56,7 @@ export default {
   }),
   methods: {
     login() {
-      api.login(this.user).then((result) => {
+      api.login.then((result) => {
         this.$store.dispatch('saveUser', result);
       });
     },
