@@ -1,16 +1,18 @@
 import axios from 'axios';
 
 const http = axios.create({
-  baseURL: 'https://attendo.ba/attendo',
+  baseURL: 'https://attendo-ba.herokuapp.com',
   timeout: 10000,
 });
 
 export default {
-  login(credentials) {
-    const payload = new FormData();
-    payload.append('j_username', credentials.username);
-    payload.append('j_password', credentials.password);
-    return http.post('/security_check', payload).then((result) => result.data);
+  login({ username, password }) {
+    return http.post('attendo', null, { params: { username, password } })
+      .then((result) => {
+        // eslint-disable-next-line
+        console.log(result);
+        return result.data;
+      });
   },
   getDailyData() {
 
