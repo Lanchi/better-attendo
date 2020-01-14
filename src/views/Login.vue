@@ -57,7 +57,7 @@ export default {
       this.loading = true;
       this.login(this.user).then(() => {
         this.loading = false;
-        this.$route.push({
+        this.$router.push({
           name: 'Daily',
         });
       });

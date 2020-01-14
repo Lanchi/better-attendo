@@ -9,8 +9,6 @@ export default {
   login({ username, password }) {
     return http.post('attendo', null, { params: { username, password } })
       .then((result) => {
-        // eslint-disable-next-line
-        console.log(result);
         return result.data;
       });
   },
