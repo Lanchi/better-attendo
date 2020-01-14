@@ -8,7 +8,7 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/login',
+      path: '/',
       name: 'Login',
       component: () => import(/* webpackChunkName: "login" */'@/views/Login'),
     },
