@@ -2,18 +2,47 @@
   <v-container fill-height>
     <v-row no-gutters
            class="mb-1">
-      <v-col cols="12" md="6">
-        <v-date-picker no-title />
+      <v-col cols="12"
+             md="6">
+        <v-menu ref="menu"
+                v-if="isMobile"
+                v-model="menu"
+                :return-value.sync="date"
+                transition="scale-transition"
+                offset-y
+                min-width="290px">
+          <template v-slot:activator="{ on }">
+            <v-text-field v-model="date"
+                          outlined
+                          append-icon="mdi-calendar-month"
+                          readonly
+                          v-on="on" />
+          </template>
+          <v-date-picker v-model="date"
+                         no-title
+                         scrollable>
+            <v-spacer></v-spacer>
+            <v-btn text
+                   color="primary"
+                   @click="menu = false">Cancel</v-btn>
+            <v-btn text
+                   color="primary"
+                   @click="$refs.menu.save(date)">OK</v-btn>
+          </v-date-picker>
+        </v-menu>
+        <v-date-picker v-if="!isMobile"
+                       no-title />
       </v-col>
-      <v-col cols="12" md="6">
+      <v-col cols="12"
+             md="6">
         <v-row no-gutters>
           <v-col cols="12"
-                 class="text-right">
+                 class="text-xs-left text-md-right">
             <span class="title">Current Session - </span>
             <span class="title">{{ workingInfo.currentSession }}</span>
           </v-col>
           <v-col cols="12"
-                 class="text-right">
+                 class="text-xs-left text-md-right">
             <span class="title">Remaining Work Time - </span>
             <span class="title">{{ workingInfo.remainingTime }}</span>
           </v-col>
@@ -24,6 +53,7 @@
       <v-col cols="12">
         <v-data-table :items="entries"
                       :headers="headers"
+                      disable-sort
                       hide-default-footer>
           <template v-slot:item.entryType="{ item }">
             <span :class="item.entryType.toLowerCase()">
@@ -31,13 +61,23 @@
             </span>
           </template>
           <template v-slot:body.append>
-            <tr class="font-weight-bold dark-row">
-              <td>Total Work Time</td>
-              <td>{{ workingInfo.totalWorkTime}}</td>
+            <tr class="font-weight-bold dark-row"
+                :class="{'v-data-table__mobile-table-row': isMobile}">
+              <td :class="{'v-data-table__mobile-row': isMobile}">
+                <div :class="{'v-data-table__mobile-row__header': isMobile}">Total Work Time</div>
+                <div v-if="isMobile"
+                     class="v-data-table__mobile-row__cell">{{ workingInfo.totalWorkTime}}</div>
+              </td>
+              <td v-if="!isMobile">{{ workingInfo.totalWorkTime}}</td>
             </tr>
-            <tr class="font-weight-bold dark-row">
-              <td>Total Break Time</td>
-              <td>{{ workingInfo.totalBreak}}</td>
+            <tr class="font-weight-bold dark-row"
+                :class="{'v-data-table__mobile-table-row': isMobile}">
+              <td :class="{'v-data-table__mobile-row': isMobile}">
+                <div :class="{'v-data-table__mobile-row__header': isMobile}">Total Break Time</div>
+                <div v-if="isMobile"
+                     class="v-data-table__mobile-row__cell">{{ workingInfo.totalBreak}}</div>
+              </td>
+              <td v-if="!isMobile">{{ workingInfo.totalBreak}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -57,6 +97,7 @@ export default {
   },
   data() {
     return {
+      date: null,
       deadline: '',
       headers: [
         {
@@ -68,6 +109,7 @@ export default {
           value: 'entryType',
         },
       ],
+      menu: false,
     };
   },
   computed: {
@@ -75,17 +117,19 @@ export default {
       'entries',
       'workingInfo',
     ]),
+    isMobile() {
+      return this.$vuetify.breakpoint.smAndDown;
+    }
   },
   mounted() {
+    const now = new Date();
+    const dateString = now.toISOString();
+    this.date = dateString.split('T')[0];
   },
 }
 </script>
 
 <style lang="scss">
-.v-data-table {
-  width: 100%;
-}
-
 .v-data-table-header {
   background-color: #1976d2 !important;
   th {
@@ -104,5 +148,9 @@ export default {
 
 .dark-row {
   background-color: #cfd8dc !important;
+
+  .v-data-table__mobile-row {
+    background-color: #cfd8dc !important;
+  }
 }
 </style>

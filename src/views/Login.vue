@@ -6,7 +6,6 @@
             flat>
       <v-card-text class="pt-6 px-5 pb-0">
         <v-form v-model="formValid"
-                autocomplete="off"
                 @submit.prevent
                 ref="loginForm">
           <v-text-field label="Username"
@@ -19,7 +18,7 @@
                         :type="showPassword ? 'text' : 'password'"
                         v-model="user.password"
                         outlined
-                        @keyup.enter="onLoginClicked"
+                        @keyup.enter="performLogin"
                         @click:append="showPassword = !showPassword" />
         </v-form>
       </v-card-text>

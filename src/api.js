@@ -7,7 +7,11 @@ const http = axios.create({
 
 export default {
   login({ username, password }) {
-    return http.post('attendo', null, { params: { username, password } })
+    const payload = new FormData();
+    payload.append('username', username);
+    payload.append('password', password);
+
+    return http.post('attendo', payload)
       .then((result) => {
         return result.data;
       });
