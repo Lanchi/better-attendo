@@ -1,5 +1,5 @@
 <template>
-  <v-container fill-height>
+  <v-container class="fill-height">
     <v-row no-gutters
            class="mb-1">
       <v-col cols="12"
@@ -21,13 +21,17 @@
           <v-date-picker v-model="date"
                          no-title
                          scrollable>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <v-btn text
                    color="primary"
-                   @click="menu = false">Cancel</v-btn>
+                   @click="menu = false">
+              Cancel
+            </v-btn>
             <v-btn text
                    color="primary"
-                   @click="$refs.menu.save(date)">OK</v-btn>
+                   @click="$refs.menu.save(date)">
+              OK
+            </v-btn>
           </v-date-picker>
         </v-menu>
         <v-date-picker v-if="!isMobile"
@@ -38,13 +42,21 @@
         <v-row no-gutters>
           <v-col cols="12"
                  class="text-xs-left text-md-right">
-            <span class="title">Current Session - </span>
-            <span class="title">{{ workingInfo.currentSession }}</span>
+            <span class="title">
+              Current Session -
+            </span>
+            <span class="title">
+              {{ workingInfo.currentSession }}
+            </span>
           </v-col>
           <v-col cols="12"
                  class="text-xs-left text-md-right">
-            <span class="title">Remaining Work Time - </span>
-            <span class="title">{{ workingInfo.remainingTime }}</span>
+            <span class="title">
+              Remaining Work Time -
+            </span>
+            <span class="title">
+              {{ workingInfo.remainingTime }}
+            </span>
           </v-col>
         </v-row>
       </v-col>
@@ -64,27 +76,36 @@
             <tr class="font-weight-bold dark-row"
                 :class="{'v-data-table__mobile-table-row': isMobile}">
               <td :class="{'v-data-table__mobile-row': isMobile}">
-                <div :class="{'v-data-table__mobile-row__header': isMobile}">Total Work Time</div>
+                <div :class="{'v-data-table__mobile-row__header': isMobile}">
+                  Total Work Time
+                </div>
                 <div v-if="isMobile"
-                     class="v-data-table__mobile-row__cell">{{ workingInfo.totalWorkTime}}</div>
+                     class="v-data-table__mobile-row__cell">
+                  {{ workingInfo.totalWorkTime }}
+                </div>
               </td>
-              <td v-if="!isMobile">{{ workingInfo.totalWorkTime}}</td>
+              <td v-if="!isMobile">
+                {{ workingInfo.totalWorkTime }}
+              </td>
             </tr>
             <tr class="font-weight-bold dark-row"
                 :class="{'v-data-table__mobile-table-row': isMobile}">
               <td :class="{'v-data-table__mobile-row': isMobile}">
-                <div :class="{'v-data-table__mobile-row__header': isMobile}">Total Break Time</div>
+                <div :class="{'v-data-table__mobile-row__header': isMobile}">
+                  Total Break Time
+                </div>
                 <div v-if="isMobile"
-                     class="v-data-table__mobile-row__cell">{{ workingInfo.totalBreak}}</div>
+                     class="v-data-table__mobile-row__cell">
+                  {{ workingInfo.totalBreak }}
+                </div>
               </td>
-              <td v-if="!isMobile">{{ workingInfo.totalBreak}}</td>
+              <td v-if="!isMobile">
+                {{ workingInfo.totalBreak }}
+              </td>
             </tr>
           </template>
         </v-data-table>
       </v-col>
-    </v-row>
-    <v-row no-gutters>
-
     </v-row>
   </v-container>
 </template>
@@ -119,14 +140,14 @@ export default {
     ]),
     isMobile() {
       return this.$vuetify.breakpoint.smAndDown;
-    }
+    },
   },
   mounted() {
     const now = new Date();
     const dateString = now.toISOString();
-    this.date = dateString.split('T')[0];
+    [this.date] = dateString.split('T');
   },
-}
+};
 </script>
 
 <style lang="scss">

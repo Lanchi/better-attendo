@@ -12,9 +12,7 @@ export default {
     payload.append('password', password);
 
     return http.post('attendo', payload)
-      .then((result) => {
-        return result.data;
-      });
+      .then((result) => result.data);
   },
   getDailyData() {
 

@@ -16,6 +16,6 @@ export default new Router({
       path: '/daily',
       name: 'Daily',
       component: () => import(/* webpackChunkName: "daily" */'@/views/Daily'),
-    }
-  ]
+    },
+  ],
 });

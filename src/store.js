@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import { Base64 } from 'js-base64';
+import utf8 from 'utf8';
 import api from '@/api';
 
 Vue.use(Vuex);
@@ -14,9 +16,9 @@ export default new Vuex.Store({
     user: null,
   },
   getters: {
-    user: state => state.user,
-    entries: state => state.entries,
-    workingInfo: state => ({
+    user: (state) => state.user,
+    entries: (state) => state.entries,
+    workingInfo: (state) => ({
       currentSession: state.currentSession,
       totalBreak: state.totalBreak,
       totalWorkTime: state.totalWorkTime,
@@ -39,6 +41,13 @@ export default new Vuex.Store({
           totalWorkTime: result.totalWorkTime,
           remainingTime: result.remainingTime,
         });
+
+        const userEncoded = {
+          username: utf8.encode(data.username),
+          password: utf8.encode(data.password),
+        };
+
+        localStorage.setItem('betterAttendo', Base64.encode(JSON.stringify(userEncoded)));
 
         return result;
       });

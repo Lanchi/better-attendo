@@ -1,5 +1,5 @@
 <template>
-  <v-container fill-height>
+  <v-container class="fill-height">
     <v-card class="card-border mx-auto pa-5"
             width="450"
             max-width="450"
@@ -62,5 +62,5 @@ export default {
       });
     },
   },
-}
+};
 </script>
