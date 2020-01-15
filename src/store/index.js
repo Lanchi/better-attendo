@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import { Base64 } from 'js-base64';
 import utf8 from 'utf8';
 import api from '@/api';
+import authPlugin from './authPlugin';
 
 Vue.use(Vuex);
 
@@ -29,8 +30,7 @@ export default new Vuex.Store({
     login({ commit }, data) {
       return api.login(data).then((result) => {
         const user = {
-          username: result.username,
-          password: result.password,
+          username: data.username,
         };
 
         commit('SET_USER', user);
@@ -67,4 +67,7 @@ export default new Vuex.Store({
       state.remainingTime = data.remainingTime;
     },
   },
+  plugins: [
+    authPlugin(),
+  ],
 });
