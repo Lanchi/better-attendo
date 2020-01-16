@@ -27,6 +27,8 @@ router.onReady(() => {
 
   const decodedCredentials = Base64.decode(credentials);
   store.dispatch('login', JSON.parse(decodedCredentials)).then(() => {
-    router.replace('/daily').then(() => app.$mount('#app'));
+    if (router.currentRoute.name !== 'Daily') {
+      router.replace('/daily').then(() => app.$mount('#app'));
+    } else app.$mount('#app');
   });
 });
