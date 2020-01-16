@@ -74,6 +74,9 @@
           <v-data-table :items="activeEntries"
                         :headers="headers"
                         disable-sort
+                        :page.sync="page"
+                        items-per-page="15"
+                        @page-count="pageCount=$event"
                         hide-default-footer>
             <template v-slot:item.entryType="{ item }">
               <span :class="item.entryType.toLowerCase()">
@@ -114,6 +117,8 @@
             </template>
           </v-data-table>
         </v-skeleton-loader>
+        <v-pagination v-model="page"
+                      :length="pageCount" />
       </v-col>
     </v-row>
   </v-container>
@@ -145,6 +150,8 @@ export default {
         },
       ],
       menu: false,
+      page: 1,
+      pageCount: 0,
     };
   },
   computed: {
@@ -172,6 +179,7 @@ export default {
           this.activeEntries = this.entries;
           this.activeWorkingInfo = this.workingInfo;
           this.loading = false;
+          this.page = 1;
         });
         return;
       }
@@ -183,12 +191,14 @@ export default {
           totalWorkTime: dayData.totalWorkTime,
           totalBreak: dayData.totalBreak,
         };
+        this.page = 1;
         return;
       }
 
       this.loading = true;
       this.getHistoryRecord(this.date).then(() => {
         this.loading = false;
+        this.page = 1;
         dayData = this.historyRecord(this.date);
         this.activeEntries = dayData.entries;
         this.activeWorkingInfo = {
