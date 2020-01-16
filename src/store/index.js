@@ -15,6 +15,7 @@ export default new Vuex.Store({
     totalBreak: null,
     totalWorkTime: null,
     user: null,
+    historyRecords: {},
   },
   getters: {
     user: (state) => state.user,
@@ -25,12 +26,14 @@ export default new Vuex.Store({
       totalWorkTime: state.totalWorkTime,
       remainingTime: state.remainingTime,
     }),
+    historyRecord: (state) => (date) => state.historyRecords[date],
   },
   actions: {
     login({ commit }, data) {
       return api.login(data).then((result) => {
         const user = {
           username: data.username,
+          password: data.password,
         };
 
         commit('SET_USER', user);
@@ -52,6 +55,24 @@ export default new Vuex.Store({
         return result;
       });
     },
+    getHistoryRecord({ commit, getters }, date) {
+      const requestPayload = {
+        date,
+        ...getters.user,
+      };
+
+      return api.getDailyData(requestPayload).then((result) => {
+        const payload = {
+          date,
+          data: result,
+        };
+
+        commit('SET_DAILY_DATA', payload);
+      });
+    },
+    getTodayRecord({ dispatch, getters }) {
+      return dispatch('login', getters.user);
+    },
   },
   mutations: {
     SET_USER(state, data) {
@@ -65,6 +86,13 @@ export default new Vuex.Store({
       state.totalBreak = data.totalBreak;
       state.totalWorkTime = data.totalWorkTime;
       state.remainingTime = data.remainingTime;
+    },
+    SET_DAILY_DATA(state, { date, data }) {
+      state.historyRecords[date] = {
+        entries: data.entries,
+        totalWorkTime: data.totalWorkTime,
+        totalBreak: data.totalBreak,
+      };
     },
   },
   plugins: [

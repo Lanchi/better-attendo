@@ -5,16 +5,26 @@ const http = axios.create({
   timeout: 10000,
 });
 
+const getUserFormPayload = ({ username, password }) => {
+  const payload = new FormData();
+  payload.append('username', username);
+  payload.append('password', password);
+
+  return payload;
+};
+
 export default {
-  login({ username, password }) {
-    const payload = new FormData();
-    payload.append('username', username);
-    payload.append('password', password);
+  login(data) {
+    const payload = getUserFormPayload(data);
 
     return http.post('attendo', payload)
       .then((result) => result.data);
   },
-  getDailyData() {
+  getDailyData(data) {
+    const payload = getUserFormPayload(data);
+    payload.append('date', data.date);
 
+    return http.post('attendo', payload)
+      .then((result) => result.data);
   },
 };

@@ -4,10 +4,10 @@
            class="mb-1">
       <v-col cols="12"
              md="6">
+        <v-subheader>I work, try me!</v-subheader>
         <v-menu ref="menu"
                 v-if="isMobile"
                 v-model="menu"
-                :return-value.sync="date"
                 transition="scale-transition"
                 offset-y
                 min-width="290px">
@@ -20,7 +20,9 @@
           </template>
           <v-date-picker v-model="date"
                          no-title
-                         scrollable>
+                         scrollable
+                         :max="today"
+                         @change="onDateSelected">
             <v-spacer />
             <v-btn text
                    color="primary"
@@ -35,10 +37,14 @@
           </v-date-picker>
         </v-menu>
         <v-date-picker v-if="!isMobile"
-                       no-title />
+                       v-model="date"
+                       :max="today"
+                       no-title
+                       @change="onDateSelected" />
       </v-col>
       <v-col cols="12"
-             md="6">
+             md="6"
+             v-if="isTodaySelected">
         <v-row no-gutters>
           <v-col cols="12"
                  class="text-xs-left text-md-right">
@@ -63,54 +69,58 @@
     </v-row>
     <v-row no-gutters>
       <v-col cols="12">
-        <v-data-table :items="entries"
-                      :headers="headers"
-                      disable-sort
-                      hide-default-footer>
-          <template v-slot:item.entryType="{ item }">
-            <span :class="item.entryType.toLowerCase()">
-              {{ item.entryType }}
-            </span>
-          </template>
-          <template v-slot:body.append>
-            <tr class="font-weight-bold dark-row"
-                :class="{'v-data-table__mobile-table-row': isMobile}">
-              <td :class="{'v-data-table__mobile-row': isMobile}">
-                <div :class="{'v-data-table__mobile-row__header': isMobile}">
-                  Total Work Time
-                </div>
-                <div v-if="isMobile"
-                     class="v-data-table__mobile-row__cell">
-                  {{ workingInfo.totalWorkTime }}
-                </div>
-              </td>
-              <td v-if="!isMobile">
-                {{ workingInfo.totalWorkTime }}
-              </td>
-            </tr>
-            <tr class="font-weight-bold dark-row"
-                :class="{'v-data-table__mobile-table-row': isMobile}">
-              <td :class="{'v-data-table__mobile-row': isMobile}">
-                <div :class="{'v-data-table__mobile-row__header': isMobile}">
-                  Total Break Time
-                </div>
-                <div v-if="isMobile"
-                     class="v-data-table__mobile-row__cell">
-                  {{ workingInfo.totalBreak }}
-                </div>
-              </td>
-              <td v-if="!isMobile">
-                {{ workingInfo.totalBreak }}
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
+        <v-skeleton-loader :loading="loading"
+                           type="table">
+          <v-data-table :items="activeEntries"
+                        :headers="headers"
+                        disable-sort
+                        hide-default-footer>
+            <template v-slot:item.entryType="{ item }">
+              <span :class="item.entryType.toLowerCase()">
+                {{ item.entryType }}
+              </span>
+            </template>
+            <template v-slot:body.append>
+              <tr class="font-weight-bold dark-row"
+                  :class="{'v-data-table__mobile-table-row': isMobile}">
+                <td :class="{'v-data-table__mobile-row': isMobile}">
+                  <div :class="{'v-data-table__mobile-row__header': isMobile}">
+                    Total Work Time
+                  </div>
+                  <div v-if="isMobile"
+                       class="v-data-table__mobile-row__cell">
+                    {{ activeWorkingInfo.totalWorkTime }}
+                  </div>
+                </td>
+                <td v-if="!isMobile">
+                  {{ activeWorkingInfo.totalWorkTime }}
+                </td>
+              </tr>
+              <tr class="font-weight-bold dark-row"
+                  :class="{'v-data-table__mobile-table-row': isMobile}">
+                <td :class="{'v-data-table__mobile-row': isMobile}">
+                  <div :class="{'v-data-table__mobile-row__header': isMobile}">
+                    Total Break Time
+                  </div>
+                  <div v-if="isMobile"
+                       class="v-data-table__mobile-row__cell">
+                    {{ activeWorkingInfo.totalBreak }}
+                  </div>
+                </td>
+                <td v-if="!isMobile">
+                  {{ activeWorkingInfo.totalBreak }}
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
+        </v-skeleton-loader>
       </v-col>
     </v-row>
   </v-container>
 </template>
 <script>
-import { mapGetters } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
+import { format } from 'date-fns';
 
 export default {
   name: 'Daily',
@@ -118,7 +128,11 @@ export default {
   },
   data() {
     return {
-      date: null,
+      activeEntries: [],
+      activeWorkingInfo: {},
+      loading: false,
+      today: format(new Date(), 'yyyy-MM-dd'),
+      date: format(new Date(), 'yyyy-MM-dd'),
       deadline: '',
       headers: [
         {
@@ -137,15 +151,56 @@ export default {
     ...mapGetters([
       'entries',
       'workingInfo',
+      'historyRecord',
     ]),
     isMobile() {
       return this.$vuetify.breakpoint.smAndDown;
     },
+    isTodaySelected() {
+      return this.today === this.date;
+    },
+  },
+  methods: {
+    ...mapActions([
+      'getHistoryRecord',
+      'getTodayRecord',
+    ]),
+    onDateSelected() {
+      if (this.isTodaySelected) {
+        this.loading = true;
+        this.getTodayRecord().then(() => {
+          this.activeEntries = this.entries;
+          this.activeWorkingInfo = this.workingInfo;
+          this.loading = false;
+        });
+        return;
+      }
+
+      let dayData = this.historyRecord(this.date);
+      if (dayData) {
+        this.activeEntries = dayData.entries;
+        this.activeWorkingInfo = {
+          totalWorkTime: dayData.totalWorkTime,
+          totalBreak: dayData.totalBreak,
+        };
+        return;
+      }
+
+      this.loading = true;
+      this.getHistoryRecord(this.date).then(() => {
+        this.loading = false;
+        dayData = this.historyRecord(this.date);
+        this.activeEntries = dayData.entries;
+        this.activeWorkingInfo = {
+          totalWorkTime: dayData.totalWorkTime,
+          totalBreak: dayData.totalBreak,
+        };
+      });
+    },
   },
   mounted() {
-    const now = new Date();
-    const dateString = now.toISOString();
-    [this.date] = dateString.split('T');
+    this.activeEntries = this.entries;
+    this.activeWorkingInfo = this.workingInfo;
   },
 };
 </script>
