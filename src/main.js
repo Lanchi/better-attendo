@@ -4,6 +4,7 @@ import store from './store';
 import router from './router';
 import App from './App';
 import vuetify from './plugins/vuetify';
+import './registerServiceWorker';
 
 Vue.config.productionTip = false;
 

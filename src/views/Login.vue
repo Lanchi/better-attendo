@@ -34,6 +34,10 @@
         </v-btn>
       </v-card-actions>
     </v-card>
+    <v-snackbar color="error"
+                v-model="snackbar">
+      {{ errorMessage }}
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -47,6 +51,8 @@ export default {
     user: {},
     showPassword: false,
     formValid: null,
+    snackbar: false,
+    errorMessage: null,
   }),
   methods: {
     ...mapActions([
@@ -55,10 +61,14 @@ export default {
     performLogin() {
       this.loading = true;
       this.login(this.user).then(() => {
-        this.loading = false;
         this.$router.push({
           name: 'Daily',
         });
+      }).catch(() => {
+        this.snackbar = true;
+        this.errorMessage = 'Something went wrong, please try again';
+      }).finally(() => {
+        this.loading = false;
       });
     },
   },

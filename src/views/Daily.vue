@@ -16,6 +16,7 @@
                           outlined
                           append-icon="mdi-calendar-month"
                           readonly
+                          color="primary"
                           v-on="on" />
           </template>
           <v-date-picker v-model="date"
@@ -40,29 +41,81 @@
                        v-model="date"
                        :max="today"
                        no-title
+                       :first-day-of-week="1"
                        @change="onDateSelected" />
       </v-col>
       <v-col cols="12"
              md="6"
              v-if="isTodaySelected">
         <v-row no-gutters>
-          <v-col cols="12"
-                 class="text-xs-left text-md-right">
-            <span class="title">
-              Current Session -
-            </span>
-            <span class="title">
-              {{ workingInfo.currentSession }}
-            </span>
-          </v-col>
-          <v-col cols="12"
-                 class="text-xs-left text-md-right">
-            <span class="title">
-              Remaining Work Time -
-            </span>
-            <span class="title">
-              {{ workingInfo.remainingTime }}
-            </span>
+          <v-col cols="12">
+            <v-subheader v-if="!isMobile" />
+            <v-card>
+              <v-card-text class="pa-0">
+                <v-list class="transparent py-0"
+                        dense>
+                  <v-subheader class="font-weight-bold">
+                    Daily
+                  </v-subheader>
+                  <v-list-item>
+                    <v-list-item-title>Current Session</v-list-item-title>
+                    <v-list-item-subtitle class="text-right">
+                      {{ workingInfo.currentSession }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>Remaining Work Time</v-list-item-title>
+                    <v-list-item-subtitle class="text-right">
+                      {{ workingInfo.remainingTime }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-divider />
+                  <v-subheader class="font-weight-bold">
+                    <span class="mr-1">Weekly</span>
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on }">
+                        <v-icon small
+                                v-on="on"
+                                color="grey lighten-1">
+                          mdi-alert-circle-outline
+                        </v-icon>
+                      </template>
+                      <span>These numbers will update on the next check out event (attendo API limitation)</span>
+                    </v-tooltip>
+                  </v-subheader>
+                  <v-list-item>
+                    <v-list-item-title>
+                      <span class="mr-1">Target</span>
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ on }">
+                          <v-icon small
+                                  v-on="on"
+                                  color="grey lighten-1">
+                            mdi-alert-circle-outline
+                          </v-icon>
+                        </template>
+                        <span>Target time from the beginning of the week to today</span>
+                      </v-tooltip>
+                    </v-list-item-title>
+                    <v-list-item-subtitle class="text-right">
+                      {{ weeklyAggregates.target }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>Current</v-list-item-title>
+                    <v-list-item-subtitle class="text-right">
+                      {{ weeklyAggregates.current }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>You're still missing</v-list-item-title>
+                    <v-list-item-subtitle class="text-right">
+                      {{ weeklyAggregates.difference }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
       </v-col>
@@ -75,7 +128,7 @@
                         :headers="headers"
                         disable-sort
                         :page.sync="page"
-                        items-per-page="15"
+                        :items-per-page="15"
                         @page-count="pageCount=$event"
                         hide-default-footer>
             <template v-slot:item.entryType="{ item }">
@@ -121,6 +174,10 @@
                       :length="pageCount" />
       </v-col>
     </v-row>
+    <v-snackbar color="error"
+                v-model="snackbar">
+      {{ errorMessage }}
+    </v-snackbar>
   </v-container>
 </template>
 <script>
@@ -139,6 +196,7 @@ export default {
       today: format(new Date(), 'yyyy-MM-dd'),
       date: format(new Date(), 'yyyy-MM-dd'),
       deadline: '',
+      errorMessage: null,
       headers: [
         {
           text: 'Time',
@@ -152,6 +210,7 @@ export default {
       menu: false,
       page: 1,
       pageCount: 0,
+      snackbar: false,
     };
   },
   computed: {
@@ -159,6 +218,7 @@ export default {
       'entries',
       'workingInfo',
       'historyRecord',
+      'weeklyAggregates',
     ]),
     isMobile() {
       return this.$vuetify.breakpoint.smAndDown;
@@ -172,6 +232,10 @@ export default {
       'getHistoryRecord',
       'getTodayRecord',
     ]),
+    allowedDates(val) {
+      // don't allow weekends
+      return ![0, 6].includes(new Date(val).getDay());
+    },
     onDateSelected() {
       if (this.isTodaySelected) {
         this.loading = true;
@@ -205,6 +269,9 @@ export default {
           totalWorkTime: dayData.totalWorkTime,
           totalBreak: dayData.totalBreak,
         };
+      }).catch(() => {
+        this.snackbar = true;
+        this.errorMessage = 'Something went wrong, please try again';
       });
     },
   },
@@ -217,7 +284,7 @@ export default {
 
 <style lang="scss">
 .v-data-table-header {
-  background-color: #1976d2 !important;
+  background-color: #71BEAE !important;
   th {
     color: white !important;
     font-size: 14px;

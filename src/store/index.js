@@ -1,11 +1,29 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import { toNumber } from 'lodash';
 import { Base64 } from 'js-base64';
 import utf8 from 'utf8';
 import api from '@/api';
 import authPlugin from './authPlugin';
 
 Vue.use(Vuex);
+
+const parseTimeFormat = (data) => {
+  const timeParts = [];
+  let raw = data.split('H');
+  timeParts.push(raw[0]);
+
+  if (!raw[1]) return timeParts[0];
+
+  raw = raw[1].split('M');
+  timeParts.push(toNumber(raw[0].replace('-', '')));
+
+  if (!raw[1]) return timeParts.join(':');
+
+  timeParts.push(toNumber(raw[1].split('S')[0].replace('-', '')));
+
+  return timeParts.join(':');
+};
 
 export default new Vuex.Store({
   state: {
@@ -16,10 +34,12 @@ export default new Vuex.Store({
     totalWorkTime: null,
     user: null,
     historyRecords: {},
+    weeklyAggregates: {},
   },
   getters: {
     user: (state) => state.user,
     entries: (state) => state.entries,
+    weeklyAggregates: (state) => state.weeklyAggregates,
     workingInfo: (state) => ({
       currentSession: state.currentSession,
       totalBreak: state.totalBreak,
@@ -43,6 +63,11 @@ export default new Vuex.Store({
           totalBreak: result.totalBreak,
           totalWorkTime: result.totalWorkTime,
           remainingTime: result.remainingTime,
+        });
+        commit('SET_AGGREGATES', {
+          cumulativeWantedTime: result.cumulativeWantedTime,
+          cumulativeCalculated: result.cumulativeCalculated,
+          cumulativeDifference: result.cumulativeDifference,
         });
 
         const userEncoded = {
@@ -75,6 +100,13 @@ export default new Vuex.Store({
     },
   },
   mutations: {
+    SET_AGGREGATES(state, data) {
+      state.weeklyAggregates = {
+        target: parseTimeFormat(data.cumulativeWantedTime),
+        current: parseTimeFormat(data.cumulativeCalculated),
+        difference: parseTimeFormat(data.cumulativeDifference),
+      };
+    },
     SET_USER(state, data) {
       state.user = data;
     },
