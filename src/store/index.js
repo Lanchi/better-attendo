@@ -68,20 +68,19 @@ const calculateFullWorkTime = (target, entry) => {
 
 const calculateRemainingFullWorkTime = (target, entry) => {
   const currentParts = entry.split(':');
-  const targetParts = target.split(':');
   const currentMapper = {
     hours: currentParts[0] || 0,
     minutes: currentParts[1] || 0,
     seconds: currentParts[2] || 0,
   };
   const targetMapper = {
-    hours: targetParts[0] || 60,
-    minutes: targetParts[1] || 60,
-    seconds: targetParts[2] || 60,
+    hours: target,
+    minutes: 60,
+    seconds: 60,
   };
 
   if (currentMapper.hours >= targetMapper.hours) {
-    return 'Good job! You did your hours.';
+    return 'Good job! You did your time.';
   }
 
   const result = [];
@@ -174,7 +173,7 @@ export default new Vuex.Store({
     },
     parseAggregates({ commit }, data) {
       const formattedWork = parseTimeFormat(data.cumulativeCalculated);
-      const target = parseTimeFormat(data.cumulativeWantedTime);
+      const target = parseInt(parseTimeFormat(data.cumulativeWantedTime), 10) + 7;
       const fullWorkTime = calculateFullWorkTime(formattedWork, data.totalWorkTime);
 
       const aggregates = {
