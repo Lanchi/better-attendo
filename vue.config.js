@@ -3,6 +3,6 @@ module.exports = {
     'vuetify',
   ],
   pwa: {
-    themeColor: '#1976d2',
+    themeColor: '#71BEAE',
   },
 };
