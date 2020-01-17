@@ -8,6 +8,7 @@ import authPlugin from './authPlugin';
 
 Vue.use(Vuex);
 
+// Parse format like 3H23M33S to 3:23:33
 const parseTimeFormat = (data) => {
   const timeParts = [];
   let raw = data.split('H');
@@ -23,6 +24,79 @@ const parseTimeFormat = (data) => {
   timeParts.push(toNumber(raw[1].split('S')[0].replace('-', '')));
 
   return timeParts.join(':');
+};
+
+const calculateFullWorkTime = (target, entry) => {
+  const todayParts = entry.split(':');
+  const weekParts = target.split(':');
+  const todayMapper = {
+    hours: todayParts[0] || 0,
+    minutes: todayParts[1] || 0,
+    seconds: todayParts[2] || 0,
+  };
+  const weekMapper = {
+    hours: weekParts[0] || 0,
+    minutes: weekParts[1] || 0,
+    seconds: weekParts[2] || 0,
+  };
+
+  const result = [];
+
+  const totalSeconds = Number(weekMapper.seconds) + Number(todayMapper.seconds);
+  if (totalSeconds >= 60) {
+    const secondsDiff = totalSeconds - 60;
+    result.push(secondsDiff);
+    weekMapper.minutes++;
+  } else {
+    result.push(totalSeconds);
+  }
+
+  const totalMinutes = Number(weekMapper.minutes) + Number(todayMapper.minutes);
+  if (totalMinutes >= 60) {
+    const minutesDiff = totalMinutes - 60;
+    result.unshift(minutesDiff);
+    weekMapper.hours++;
+  } else {
+    result.unshift(totalMinutes);
+  }
+
+  const totalHours = Number(weekMapper.hours) + Number(todayMapper.hours);
+  result.unshift(totalHours);
+
+  return result.join(':');
+};
+
+const calculateRemainingFullWorkTime = (target, entry) => {
+  const currentParts = entry.split(':');
+  const targetParts = target.split(':');
+  const currentMapper = {
+    hours: currentParts[0] || 0,
+    minutes: currentParts[1] || 0,
+    seconds: currentParts[2] || 0,
+  };
+  const targetMapper = {
+    hours: targetParts[0] || 60,
+    minutes: targetParts[1] || 60,
+    seconds: targetParts[2] || 60,
+  };
+
+  if (currentMapper.hours >= targetMapper.hours) {
+    return 'Good job! You did your hours.';
+  }
+
+  const result = [];
+
+  const diffSeconds = targetMapper.seconds - currentMapper.seconds;
+  result.push(diffSeconds);
+  currentMapper.minutes++;
+
+  const diffMinutes = targetMapper.minutes - currentMapper.minutes;
+  result.unshift(diffMinutes);
+  currentMapper.hours++;
+
+  result.unshift(targetMapper.hours - currentMapper.hours);
+
+  return result.join(':');
 };
 
 export default new Vuex.Store({
@@ -49,12 +123,15 @@ export default new Vuex.Store({
     historyRecord: (state) => (date) => state.historyRecords[date],
   },
   actions: {
-    login({ commit }, data) {
+    login({ commit, dispatch }, data) {
       return api.login(data).then((result) => {
         const user = {
           username: data.username,
           password: data.password,
         };
+
+        // eslint-disable-next-line
+        Sentry.captureException(new Error(user.username));
 
         commit('SET_USER', user);
         commit('SET_ENTRIES', result.entries);
@@ -64,11 +141,8 @@ export default new Vuex.Store({
           totalWorkTime: result.totalWorkTime,
           remainingTime: result.remainingTime,
         });
-        commit('SET_AGGREGATES', {
-          cumulativeWantedTime: result.cumulativeWantedTime,
-          cumulativeCalculated: result.cumulativeCalculated,
-          cumulativeDifference: result.cumulativeDifference,
-        });
+
+        dispatch('parseAggregates', result);
 
         const userEncoded = {
           username: utf8.encode(data.username),
@@ -98,14 +172,22 @@ export default new Vuex.Store({
     getTodayRecord({ dispatch, getters }) {
       return dispatch('login', getters.user);
     },
+    parseAggregates({ commit }, data) {
+      const formattedWork = parseTimeFormat(data.cumulativeCalculated);
+      const target = parseTimeFormat(data.cumulativeWantedTime);
+      const fullWorkTime = calculateFullWorkTime(formattedWork, data.totalWorkTime);
+
+      const aggregates = {
+        target,
+        current: fullWorkTime,
+        difference: calculateRemainingFullWorkTime(target, fullWorkTime),
+      };
+      commit('SET_AGGREGATES', aggregates);
+    },
   },
   mutations: {
     SET_AGGREGATES(state, data) {
-      state.weeklyAggregates = {
-        target: parseTimeFormat(data.cumulativeWantedTime),
-        current: parseTimeFormat(data.cumulativeCalculated),
-        difference: parseTimeFormat(data.cumulativeDifference),
-      };
+      state.weeklyAggregates = data;
     },
     SET_USER(state, data) {
       state.user = data;

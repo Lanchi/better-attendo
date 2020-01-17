@@ -72,17 +72,6 @@
                   <v-divider />
                   <v-subheader class="font-weight-bold">
                     <span class="mr-1">Weekly</span>
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-icon small
-                                v-on="on"
-                                color="grey lighten-1">
-                          mdi-alert-circle-outline
-                        </v-icon>
-                      </template>
-                      <span>If your last event is check out, you will have your complete data here.
-                        If it's check in, these numbers will not reflect today's intervals. That's how attendo API works.</span>
-                    </v-tooltip>
                   </v-subheader>
                   <v-list-item>
                     <v-list-item-title>

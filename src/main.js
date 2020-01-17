@@ -6,6 +6,8 @@ import App from './App';
 import vuetify from './plugins/vuetify';
 import './registerServiceWorker';
 
+// eslint-disable-next-line
+Sentry.init({ dsn: 'https://b3dd75ad8f134c86b471bdea50267efc@sentry.io/1885795' });
 Vue.config.productionTip = false;
 
 const app = new Vue({
