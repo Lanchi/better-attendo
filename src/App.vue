@@ -14,7 +14,8 @@
           <v-spacer />
           <v-col cols="10"
                  class="text-right"
-                 align-self="center">
+                 align-self="center"
+                 v-if="user">
             {{ user.username }}
           </v-col>
         </v-row>

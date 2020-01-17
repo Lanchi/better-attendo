@@ -80,7 +80,8 @@
                           mdi-alert-circle-outline
                         </v-icon>
                       </template>
-                      <span>These numbers will update on the next check out event (attendo API limitation)</span>
+                      <span>If your last event is check out, you will have your complete data here.
+                        If it's check in, these numbers will not reflect today's intervals. That's how attendo API works.</span>
                     </v-tooltip>
                   </v-subheader>
                   <v-list-item>
