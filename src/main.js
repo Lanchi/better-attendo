@@ -4,7 +4,7 @@ import store from './store';
 import router from './router';
 import App from './App';
 import vuetify from './plugins/vuetify';
-import './registerServiceWorker';
+// import './registerServiceWorker';
 
 // eslint-disable-next-line
 Sentry.init({ dsn: 'https://b3dd75ad8f134c86b471bdea50267efc@sentry.io/1885795' });
