@@ -18,10 +18,7 @@ export default {
     const payload = getUserFormPayload(data);
 
     return http.post('attendo', payload)
-      .then((result) => result.data)
-      .catch((err) => {
-        console.log({ ...err });
-      });
+      .then((result) => result.data);
   },
   getDailyData(data) {
     const payload = getUserFormPayload(data);
