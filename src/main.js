@@ -33,5 +33,8 @@ router.onReady(() => {
     if (router.currentRoute.name !== 'Daily') {
       router.replace('/daily').then(() => app.$mount('#app'));
     } else app.$mount('#app');
-  });
+  })
+    .catch(() => {
+      app.$mount('#app');
+    });
 });

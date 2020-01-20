@@ -66,7 +66,7 @@ export default {
         });
       }).catch(() => {
         this.snackbar = true;
-        this.errorMessage = 'Something went wrong, please try again';
+        this.errorMessage = 'We are having troubles logging you in, there are probably some issues with Attendo API.';
       }).finally(() => {
         this.loading = false;
       });
