@@ -122,7 +122,7 @@ export default new Vuex.Store({
     historyRecord: (state) => (date) => state.historyRecords[date],
   },
   actions: {
-    login({ commit, dispatch }, data) {
+    login({ commit, dispatch, getters }, data) {
       return api.login(data).then((result) => {
         const user = {
           username: data.username,
@@ -130,7 +130,7 @@ export default new Vuex.Store({
         };
 
         // eslint-disable-next-line
-        if (!state.user || !state.user.username) Sentry.captureException(new Error(user.username));
+        if (!getters.user || !getters.user.username) Sentry.captureException(new Error(user.username));
 
         commit('SET_USER', user);
         commit('SET_ENTRIES', result.entries);
