@@ -130,7 +130,7 @@ export default new Vuex.Store({
         };
 
         // eslint-disable-next-line
-        Sentry.captureException(new Error(user.username));
+        if (!state.user || !state.user.username) Sentry.captureException(new Error(user.username));
 
         commit('SET_USER', user);
         commit('SET_ENTRIES', result.entries);
