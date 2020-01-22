@@ -4,7 +4,6 @@
            class="mb-1">
       <v-col cols="12"
              md="6">
-        <v-subheader>I work, try me!</v-subheader>
         <v-menu ref="menu"
                 v-if="isMobile"
                 v-model="menu"
@@ -49,7 +48,6 @@
              v-if="isTodaySelected">
         <v-row no-gutters>
           <v-col cols="12">
-            <v-subheader v-if="!isMobile" />
             <v-card>
               <v-card-text class="pa-0">
                 <v-list class="transparent py-0"
@@ -67,6 +65,12 @@
                     <v-list-item-title>Remaining Work Time</v-list-item-title>
                     <v-list-item-subtitle class="text-right">
                       {{ workingInfo.remainingTime }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>Estimated end at</v-list-item-title>
+                    <v-list-item-subtitle class="text-right">
+                      {{ workingInfo.estimatedEndTime }}
                     </v-list-item-subtitle>
                   </v-list-item>
                   <v-divider />
@@ -273,6 +277,10 @@ export default {
 </script>
 
 <style lang="scss">
+.v-picker--date {
+  height: 100%;
+}
+
 .v-data-table-header {
   background-color: #71BEAE !important;
   th {

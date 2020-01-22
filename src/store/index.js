@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import { toNumber } from 'lodash';
 import { Base64 } from 'js-base64';
 import utf8 from 'utf8';
+import { format } from 'date-fns';
 import api from '@/api';
 import authPlugin from './authPlugin';
 
@@ -26,6 +27,7 @@ const parseTimeFormat = (data) => {
   return timeParts.join(':');
 };
 
+// Returns a sum of provided time entries, e.g. weekly and current day work time
 const calculateFullWorkTime = (target, entry) => {
   const todayParts = entry.split(':');
   const weekParts = target.split(':');
@@ -66,6 +68,7 @@ const calculateFullWorkTime = (target, entry) => {
   return result.join(':');
 };
 
+// Calculates the diff between provided time entries, e.g. target and current weekly work time
 const calculateRemainingFullWorkTime = (target, entry) => {
   const currentParts = entry.split(':');
   const currentMapper = {
@@ -118,6 +121,7 @@ export default new Vuex.Store({
       totalBreak: state.totalBreak,
       totalWorkTime: state.totalWorkTime,
       remainingTime: state.remainingTime,
+      estimatedEndTime: state.estimatedEndTime,
     }),
     historyRecord: (state) => (date) => state.historyRecords[date],
   },
@@ -129,6 +133,7 @@ export default new Vuex.Store({
           password: data.password,
         };
 
+        const currentTime = format(new Date(), 'hh:mm:ss');
         // eslint-disable-next-line
         if (!getters.user || !getters.user.username) Sentry.captureException(new Error(user.username));
 
@@ -139,6 +144,8 @@ export default new Vuex.Store({
           totalBreak: result.totalBreak,
           totalWorkTime: result.totalWorkTime,
           remainingTime: result.remainingTime,
+          estimatedEndTime: result.remainingTime.indexOf('-') >= 0
+            ? 'Good job! You did your time.' : calculateFullWorkTime(currentTime, result.remainingTime),
         });
 
         dispatch('parseAggregates', result);
@@ -172,9 +179,18 @@ export default new Vuex.Store({
       return dispatch('login', getters.user);
     },
     parseAggregates({ commit }, data) {
+      const { intervalClosed } = data;
+      const date = new Date();
       const formattedWork = parseTimeFormat(data.cumulativeCalculated);
-      const target = parseInt(parseTimeFormat(data.cumulativeWantedTime), 10) + 7;
-      const fullWorkTime = calculateFullWorkTime(formattedWork, data.totalWorkTime);
+      const formattedWorkPeriod = parseTimeFormat(data.workPeriod);
+
+      // weekly target
+      const target = date.getDay() * formattedWorkPeriod;
+
+      // weekly work - when interval is closed, it already contains correct data
+      // when interval is open, we need to add current daily work
+      const fullWorkTime = intervalClosed ? formattedWork
+        : calculateFullWorkTime(formattedWork, data.totalWorkTime);
 
       const aggregates = {
         target,
@@ -199,6 +215,7 @@ export default new Vuex.Store({
       state.totalBreak = data.totalBreak;
       state.totalWorkTime = data.totalWorkTime;
       state.remainingTime = data.remainingTime;
+      state.estimatedEndTime = data.estimatedEndTime;
     },
     SET_DAILY_DATA(state, { date, data }) {
       state.historyRecords[date] = {
